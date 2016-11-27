@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 
 namespace mapmaker
@@ -7,46 +8,37 @@ namespace mapmaker
     class Screen
     {
         private int mScreen;
-        private List<Tile> mTiles = new List<Tile>();
+        private List<Row> mRows = new List<Row>();
         
         public Screen(int screenCount)
         {
             mScreen = screenCount;
-            InitaliseTiles();
+            InitialiseRows();
         }
 
-        public void InitaliseTiles()
+        public void InitialiseRows()
         {
-            for (int i = 0; i < 140; i++)
+            for (int i = 0; i < 10; i++)
             {
-                mTiles.Add(new Tile("4"));
+                mRows.Add(new Row());
             }
         }
 
-        public void addTile(Tile toAdd)
+        public void addRow(Row toAdd)
         {
-            mTiles.Add(toAdd);
+            mRows.Add(toAdd);
         }
 
-        public string GetDataAsString(int count)
-        {
-            string asciis = "";
-            for (int i = count; i < 14 + count; i++)
-            {
-                asciis = asciis + this.Tiles[i].AsciiCode + ",";
-            }
-            return asciis;
-        }
-
+        [JsonIgnoreAttribute]
         public int UndergroudScreen
         {
             get { return mScreen; }
         }
 
-        public List<Tile> Tiles
+        public List<Row> Rows
         {
-            get { return mTiles; }
-            set { mTiles = value; }
+            get { return mRows; }
+            set { mRows = value; }
         }
     }
 }

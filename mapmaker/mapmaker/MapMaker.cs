@@ -15,11 +15,12 @@ using System.Windows.Forms;
 
 namespace mapmaker
 {
-    public partial class MapMaker : Form
+    partial class MapMaker : Form
     {
         // The menu bar pinches 30 pixels from the top of the screen !!
         private int mMenuBarFudgeFactor = 30;
         private int mGridSquareNmber = 0;
+        private int mRowNumber = 0;
         private int mLevel = 0;
 
         private int m_screenshotStartX;
@@ -152,7 +153,7 @@ namespace mapmaker
                 this.comboBox1.Items.Add(i);
                 this.comboBox1.Text = "0";
             }
-            this.SaveMenuItem.Enabled = false;
+            //this.SaveMenuItem.Enabled = false;
             m_fileManager = new FileManager(screens, noButtonsX);
         }
 
@@ -167,20 +168,17 @@ namespace mapmaker
 
         private void MapMaker_Paint(object sender, PaintEventArgs e)
         {
-            int tileCount = 0;
             e.Graphics.DrawImage(grid, gridPos);
 
-            foreach (Tile t in screens[mLevel].Tiles)
+            foreach (Row r in screens[mLevel].Rows)
             {
-                if (screens[mLevel].Tiles[tileCount].BitmapTile != null)
+                foreach (Tile t in r.Tiles)
                 {
-                    e.Graphics.DrawImage(t.BitmapTile, t.XStart, t.YStart);
+                    if (t.BitmapTile != null)
+                    {
+                        e.Graphics.DrawImage(t.BitmapTile, t.XStart, t.YStart);
+                    }
                 }
-                if (tileCount == screens[mLevel].Tiles.Count)
-                {
-                    tileCount = 0;
-                }
-                tileCount += 1;
             }
 
             if (areMoving)
@@ -201,8 +199,8 @@ namespace mapmaker
             if (cloneBitmap == null)
             {
                 snapToGrid(e);
-                screens[mLevel].Tiles[mGridSquareNmber].BitmapTile = null;
-                screens[mLevel].Tiles[mGridSquareNmber].AsciiCode = "4"; // ".";
+                screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].BitmapTile = null;
+                screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].AsciiCode = "4"; // ".";
             }
         }
 
@@ -219,10 +217,19 @@ namespace mapmaker
             if (e.Button == MouseButtons.Left && cloneBitmap != null)
             {
                 snapToGrid(e);
-                screens[mLevel].Tiles[mGridSquareNmber].BitmapTile = cloneBitmap;
-                screens[mLevel].Tiles[mGridSquareNmber].XStart = m_screenshotStartX;
-                screens[mLevel].Tiles[mGridSquareNmber].YStart = m_screenshotStartY;
-                screens[mLevel].Tiles[mGridSquareNmber].AsciiCode = asciiCode;
+                screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].BitmapTile = cloneBitmap;
+                screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].XStart = m_screenshotStartX;
+                screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].YStart = m_screenshotStartY;
+                screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].AsciiCode = asciiCode;
+
+                if(radioButton1.Checked)
+                {
+                    screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].Type = "platform";
+                }
+                else
+                {
+                    screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].Type = "enemy";
+                }
             }
 
             if (e.Button == MouseButtons.Right)
@@ -245,10 +252,11 @@ namespace mapmaker
             areMoving = true;
         }
 
-        private int snapToGrid(MouseEventArgs e)
+        private int[] snapToGrid(MouseEventArgs e)
         {
             int counterX = 1;
             int counterY = 0;
+            int[] position = new int[2];
             for (int i = mTileWidth; i < 13 * mTileWidth; i += mTileWidth)//12
             {
                 for (int j = 0 + mMenuBarFudgeFactor; j < 10 * mTileHeight; j += mTileHeight)
@@ -258,13 +266,18 @@ namespace mapmaker
                         m_screenshotStartX = i;
                         m_screenshotStartY = j;
                         counterX = i / mTileWidth;
-                        counterY = (j / mTileHeight) * 14;
-                        mGridSquareNmber = counterX + counterY;
-                        return mGridSquareNmber;
+                        counterY = j / mTileHeight;
+
+                        mRowNumber = counterY;
+                        mGridSquareNmber = counterX;
+                        position[0] = mRowNumber;
+                        position[1] = mGridSquareNmber;
+
+                        return position;
                     }
                 }
             }
-            return 0;
+            return position;
         }
 
         // Draw the grid 13 squares wide x 10 squares high and convert it to a Bitmap
@@ -346,7 +359,24 @@ namespace mapmaker
         {
         }
 
+        // open json file
         private void OpenMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Title = "Map Maker";
+            openFileDialog.InitialDirectory = @"*.*";
+            openFileDialog.Filter = "All files (*.*)|*.*|All files (*.txt)|*.txt";
+            openFileDialog.FilterIndex = 2;
+            openFileDialog.RestoreDirectory = true;
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                m_fileManager.ImportJSONFile(openFileDialog.FileName);
+            }
+        }
+
+        // open .txt file
+        private void openTextToolStripMenuItem_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Title = "Map Maker";
@@ -425,8 +455,8 @@ namespace mapmaker
             {
                 foreach (Screen scrn in screens)
                 {
-                    scrn.Tiles.Clear();
-                    scrn.InitaliseTiles();
+                    scrn.Rows.Clear();
+                    scrn.InitialiseRows();
                 }
                 Invalidate();
                 this.SaveMenuItem.Enabled = false;
