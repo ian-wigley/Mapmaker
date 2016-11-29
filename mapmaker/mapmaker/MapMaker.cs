@@ -371,23 +371,7 @@ namespace mapmaker
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                m_fileManager.ImportJSONFile(openFileDialog.FileName);
-            }
-        }
-
-        // open .txt file
-        private void openTextToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Title = "Map Maker";
-            openFileDialog.InitialDirectory = @"*.*";
-            openFileDialog.Filter = "All files (*.*)|*.*|All files (*.txt)|*.txt";
-            openFileDialog.FilterIndex = 2;
-            openFileDialog.RestoreDirectory = true;
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                m_fileManager.ImportTextFile(openFileDialog.FileName);
+                screens = m_fileManager.ImportJSONFile(openFileDialog.FileName);
             }
         }
 

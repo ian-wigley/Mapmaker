@@ -24,11 +24,6 @@ namespace mapmaker
             }
         }
 
-        public void addRow(Row toAdd)
-        {
-            mRows.Add(toAdd);
-        }
-
         [JsonIgnoreAttribute]
         public int UndergroudScreen
         {

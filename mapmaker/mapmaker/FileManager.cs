@@ -10,10 +10,6 @@ namespace mapmaker
 {
     class FileManager
     {
-        const int MaxWordCount = 80000;
-        int wordListCount = 0;
-        string[] wordList = new string[MaxWordCount];
-        private int mLevel = 0;
         private int mTileWidth = 62;
         private int mTileHeight = 49;
         private int buttons = 0;
@@ -33,103 +29,7 @@ namespace mapmaker
             buttons = numButtons;
         }
 
-        public void ImportTextFile(string fileName)
-        {
-            this.mLevel = 0;
-            int x = 0;
-            int y = 30;
-            int importCounter = 0;
-            int row = 0;
-
-            bool enemy = false;
-            StreamReader wordFile;
-            string wordLine;
-
-            try
-            {
-                wordFile = new StreamReader(fileName);
-                if (wordFile != null)
-                {
-                    wordLine = wordFile.ReadLine();
-                    while (wordLine != null)
-                    {
-                        int total = wordList.Count();
-                        wordList[wordListCount] = wordLine;
-                        wordListCount++;
-                        string[] mFileContents = wordLine.Split(new Char[] { ',' });
-
-                        for (int a = 0; a < 14; a++)
-                        {
-                            int converted = int.Parse(mFileContents[a]);
-                            if (converted < 80)
-                            {
-                                enemy = false;
-                            }
-                            else
-                            {
-                                enemy = true;
-                                converted -= 80;
-                            }
-
-                            if (converted < buttons && converted != 4)
-                            {
-                                getRect(converted.ToString());
-                                addTile(x, y, mFileContents[a], importCounter, row, enemy);
-                            }
-                            else if (converted >= buttons && converted < (buttons * 2))
-                            {
-                                converted -= (buttons * 1);
-                                getRect(converted.ToString());
-                                addTile(x, y, mFileContents[a], importCounter, row, enemy);
-                            }
-                            else if (converted >= (buttons * 2) && converted < (buttons * 3))
-                            {
-                                converted -= (buttons * 2);
-                                getRect(converted.ToString());
-                                addTile(x, y, mFileContents[a], importCounter, row, enemy);
-                            }
-                            else if (converted >= (buttons * 3) && converted < (buttons * 4))
-                            {
-                                converted -= (buttons * 3);
-                                getRect(converted.ToString());
-                                addTile(x, y, mFileContents[a], importCounter, row, enemy);
-                            }
-
-                            if (a == 0)
-                            {
-                                x = 0;
-                            }
-
-                            x += mTileWidth;
-                            importCounter++;
-                        }
-                        y += mTileHeight;
-                        row++;
-                        importCounter = 0;
-
-                        if (row == 10)
-                        {
-                            mLevel++;
-                            x = 0;
-                            y = 30;
-                            importCounter = 0;
-                            row = 0;
-                        }
-
-                        wordLine = wordFile.ReadLine();
-                    }
-                    wordFile.Close();
-                    mLevel = 0;
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("The following error occured while attempting to read the file: " + e.Message);
-                wordListCount = 0;
-            }
-        }
-
-        public void ImportJSONFile(string fileName)
+        public List<Screen> ImportJSONFile(string fileName)
         {
             StreamReader wordFile;
 
@@ -145,61 +45,51 @@ namespace mapmaker
 
                     string json = wordFile.ReadToEnd();
                     screens = JsonConvert.DeserializeObject<List<Screen>>(json, settings);
-
-                    int screenNum = 0;
-
                     
                     // draw the tiles
-                    //foreach (Screen screen in this.screens)
-                    for (int i = 0; i < 1; i++)
+                    foreach (Screen screen in this.screens)
                     {
-                        Debug.Print(screenNum.ToString());
-                        screenNum += 1;
-
-                        foreach (Row row in screens[i].Rows)
+                        foreach (Row row in screen.Rows)
                         {
                             foreach (Tile tile in row.Tiles)
                             {
                                 // ignore empty tiles
                                 if (tile.AsciiCode != "4")
                                 {
-                                    getRect(tile.AsciiCode);
-
-                                    //Debug.Print("x: " + cloneRect.X.ToString() + " y: " + cloneRect.Y.ToString() +
-                                    //            " width: " + cloneRect.Width.ToString() +
-                                    //            " height: " + cloneRect.Height.ToString());
-
-                                    Debug.Print(tile.XStart.ToString() + " " + tile.YStart.ToString());
+                                    Rectangle rect = getRect(tile.AsciiCode);
 
                                     if (tile.Type == "enemy")
                                     {
-                                        cloneBitmap = enemyBitmap.Clone(cloneRect, myBitmap.PixelFormat);
+                                        cloneBitmap = enemyBitmap.Clone(rect, myBitmap.PixelFormat);
                                     }
                                     else
                                     {
-                                        cloneBitmap = myBitmap.Clone(cloneRect, myBitmap.PixelFormat);
+                                        cloneBitmap = myBitmap.Clone(rect, myBitmap.PixelFormat);
                                     }
 
                                     tile.BitmapTile = cloneBitmap;
-                                    //cloneBitmap.Dispose();
-                                    //cloneBitmap = null;
                                 }
                             }
                         }
                     }
 
                     wordFile.Close();
-                    //wordFile.Dispose();
+                    wordFile.Dispose();
                 }
             }
             catch (Exception e)
             {
                 Debug.Print("The following error occured while attempting to read the file: " + e.Message);
             }
+
+            return this.screens;
         }
 
-        private void getRect(string asciiCode)
+        private Rectangle getRect(string asciiCode)
         {
+            int x = 0;
+            int y = 0;
+            
             int converted = int.Parse(asciiCode);
             if (converted > 80)
             {
@@ -208,45 +98,30 @@ namespace mapmaker
 
             if (converted < buttons && converted != 4)
             {
-                cloneRect.X = mTileWidth * converted;
-                cloneRect.Y = 0;
+                x = mTileWidth * converted;
+                y = 0;
 
             }
             else if (converted >= buttons && converted < (buttons * 2))
             {
                 converted -= (buttons * 1);
-                cloneRect.X = mTileWidth * converted;
-                cloneRect.Y = mTileHeight;
+                x = mTileWidth * converted;
+                y = mTileHeight;
             }
             else if (converted >= (buttons * 2) && converted < (buttons * 3))
             {
                 converted -= (buttons * 2);
-                cloneRect.X = mTileWidth * converted;
-                cloneRect.Y = mTileHeight * 2;
+                x = mTileWidth * converted;
+                y = mTileHeight * 2;
             }
             else if (converted >= (buttons * 3) && converted < (buttons * 4))
             {
                 converted -= (buttons * 3);
-                cloneRect.X = mTileWidth * converted;
-                cloneRect.Y = mTileHeight * 3;
+                x = mTileWidth * converted;
+                y = mTileHeight * 3;
             }
-        }
 
-        private void addTile(int x, int y, string ascii, int count, int row, bool enemy)
-        {
-            if (!enemy)
-            {
-                cloneBitmap = myBitmap.Clone(cloneRect, myBitmap.PixelFormat);
-            }
-            else
-            {
-                cloneBitmap = enemyBitmap.Clone(cloneRect, myBitmap.PixelFormat);
-            }
-            screens[mLevel].Rows[row].Tiles[count].BitmapTile = cloneBitmap;
-            screens[mLevel].Rows[row].Tiles[count].XStart = x;
-            screens[mLevel].Rows[row].Tiles[count].YStart = y;
-            screens[mLevel].Rows[row].Tiles[count].AsciiCode = ascii;
-            screens[mLevel].Rows[row].Tiles[count].Type = enemy ? "enemy" : "platform";
+            return new Rectangle(x, y, mTileWidth, mTileHeight);
         }
 
         public void ExportTextFile(string fileName)

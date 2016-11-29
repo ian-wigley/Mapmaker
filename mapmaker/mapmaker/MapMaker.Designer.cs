@@ -55,7 +55,6 @@
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.radioButton1 = new System.Windows.Forms.RadioButton();
-            this.openTextToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -120,7 +119,6 @@
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.NewMenuItem,
             this.ClearMenuItem,
-            this.openTextToolStripMenuItem,
             this.OpenMenuItem,
             this.SaveMenuItem,
             this.exitToolStripMenuItem});
@@ -337,13 +335,6 @@
             this.radioButton1.UseVisualStyleBackColor = true;
             this.radioButton1.CheckedChanged += new System.EventHandler(this.radioButton1_CheckedChanged);
             // 
-            // openTextToolStripMenuItem
-            // 
-            this.openTextToolStripMenuItem.Name = "openTextToolStripMenuItem";
-            this.openTextToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.openTextToolStripMenuItem.Text = "Open Text";
-            this.openTextToolStripMenuItem.Click += new System.EventHandler(this.openTextToolStripMenuItem_Click);
-            // 
             // MapMaker
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -405,7 +396,6 @@
         private System.Windows.Forms.RadioButton radioButton2;
         private System.Windows.Forms.RadioButton radioButton1;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem openTextToolStripMenuItem;
     }
 }
 
