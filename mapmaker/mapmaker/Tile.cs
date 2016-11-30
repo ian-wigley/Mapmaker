@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Drawing;
 
 namespace mapmaker
@@ -10,20 +11,23 @@ namespace mapmaker
         private int mX;
         private int mY;
         private string mAsciiCode;
+        private string mType;
 
         public Tile(string asc)
         {
             mAsciiCode = asc;
         }
 
-        public Tile(Bitmap bitmap, int X, int Y, string asc)
+        [JsonConstructor]
+        public Tile(int X, int Y, string asc, string type)
         {
-            mBit = bitmap;
             mX = X;
             mY = Y;
             mAsciiCode = asc;
+            mType = type;
         }
 
+        [JsonIgnoreAttribute]
         public Bitmap BitmapTile
         {
             get { return mBit; }
@@ -46,6 +50,12 @@ namespace mapmaker
         {
             get { return mAsciiCode; }
             set { mAsciiCode = value; }
+        }
+
+        public string Type
+        {
+            get { return mType; }
+            set { mType = value; }
         }
 
     }
