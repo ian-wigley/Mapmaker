@@ -365,13 +365,20 @@ namespace mapmaker
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Title = "Map Maker";
             openFileDialog.InitialDirectory = @"*.*";
-            openFileDialog.Filter = "All files (*.*)|*.*|All files (*.txt)|*.txt";
+            openFileDialog.Filter = "All files (*.json)|*.json|All files (*.txt)|*.txt";
             openFileDialog.FilterIndex = 2;
             openFileDialog.RestoreDirectory = true;
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                screens = m_fileManager.ImportJSONFile(openFileDialog.FileName);
+                if (openFileDialog.FileName.ToLower().Contains("txt"))
+                {
+                    screens = m_fileManager.ImportTextFile(openFileDialog.FileName);
+                }
+                if (openFileDialog.FileName.ToLower().Contains("json"))
+                {
+                    screens = m_fileManager.ImportJSONFile(openFileDialog.FileName);
+                }
             }
         }
 
@@ -380,7 +387,7 @@ namespace mapmaker
             SaveFileDialog saveFileDialog = new SaveFileDialog();
             saveFileDialog.Title = "Map Maker";
             saveFileDialog.InitialDirectory = @"*.*";
-            saveFileDialog.Filter = "All files (*.*)|*.*|All files (*.txt)|*.txt";
+            saveFileDialog.Filter = "All files (*.json)|*.json|All files (*.txt)|*.txt";
             saveFileDialog.FilterIndex = 2;
             saveFileDialog.RestoreDirectory = true;
 

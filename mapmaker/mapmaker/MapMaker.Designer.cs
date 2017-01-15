@@ -144,7 +144,7 @@
             // 
             this.OpenMenuItem.Name = "OpenMenuItem";
             this.OpenMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.OpenMenuItem.Text = "Open Json";
+            this.OpenMenuItem.Text = "Open";
             this.OpenMenuItem.Click += new System.EventHandler(this.OpenMenuItem_Click);
             // 
             // SaveMenuItem
