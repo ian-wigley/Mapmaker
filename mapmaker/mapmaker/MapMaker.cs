@@ -1,12 +1,12 @@
-﻿////////////////////////////////////////////////
-//                                            //
-// Nodes of Yesod Map Maker                   //
-//                                            //
-// Written by Ian Wigley Dec 2009 - Jul 2010  //
-//                                            //
-// Version 1.2                                //
-//                                            //
-////////////////////////////////////////////////
+﻿//////////////////////////////////////////////////////////////
+//                                                          //
+// Map Maker                                                //
+//                                                          //
+// Written by Ian Wigley Dec 2009 - Dec 2020                //
+//                                                          //
+// Version 1.4                                              //
+//                                                          //
+//////////////////////////////////////////////////////////////
 
 using System;
 using System.Collections.Generic;
@@ -15,288 +15,256 @@ using System.Windows.Forms;
 
 namespace mapmaker
 {
-    partial class MapMaker : Form
+    public partial class MapMaker : Form
     {
-        // The menu bar pinches 30 pixels from the top of the screen !!
-        private int mMenuBarFudgeFactor = 30;
-        private int mGridSquareNmber = 0;
-        private int mRowNumber = 0;
-        private int mLevel = 0;
+        private int m_asciiCode;
+
+        private int m_gridSquareNmber = 0;
+        private int m_level = 0;
 
         private int m_screenshotStartX;
         private int m_screenshotStartY;
-        private int mWidth;
-        private int mTileWidth = 62;
-        private int mTileHeight = 49;
-        private int mNoOfScreens = 256;
 
-        private int screenDisplayX;
-        private int screenDisplayY;
-        private int noButtonsX;
-        private int noButtonsY;
+        private int m_tileWidth = 62;
+        private int m_tileHeight = 49;
+        private int m_noOfScreens = 256;
 
-        private string asciiCode;
+        private int m_screenDisplayX;
+        private int m_screenDisplayY;
 
-        private bool areMoving = false;
-        private bool platforms = true;
+        private const int m_numButtonsX = 19;
+        private const int m_numButtonsY = 4;
+        private const int m_numberOfEnemyButtons = 9;
+        private const int m_numberOfLevelButtons = 76;
 
-        private Bitmap m_standardEnemyTiles = new Bitmap("enemies & alcheims.PNG");
-        private Bitmap m_standardLevelTiles = new Bitmap("underground_tiles_small.PNG");
-        private Bitmap m_smallLevelButtonTiles = new Bitmap("underground_tiles_small_screen.PNG");
-        private Bitmap cloneScreenDisplay;
-        private Bitmap cloneEnemyDisplay;
-        private Bitmap cloneBitmap;
-        private Bitmap grid = new Bitmap(808, 640);
-        private Bitmap split1;
-        private Bitmap split2;
+        private bool m_areMoving = false;
+        private bool m_platforms = true;
 
-        private Rectangle split1rect;
-        private Rectangle split2rect;
-        private Rectangle buttonRect;
-        private Rectangle cloneRect = new Rectangle(0, 0, 62, 49);
-        private Rectangle redraw = new Rectangle(62, 30, 1808, 900);
+        private Bitmap m_standardEnemyTiles = new Bitmap("enemy_tiles.png");
+        private Bitmap m_smallEnemyButtonTiles = new Bitmap("enemy_tiles_small.png");
+        private Bitmap m_standardLevelTiles = new Bitmap("underground_tiles_small.png");
+        private Bitmap m_smallLevelButtonTiles = new Bitmap("underground_tiles.png");
+        private Bitmap m_cloneScreenDisplay;
+        private Bitmap m_cloneEnemyDisplay;
+        private Bitmap m_cloneBitmap;
+        private Bitmap m_grid = new Bitmap(808, 640);
 
-        private Point gridPos = new Point(0, 0);
-        private Point enemyPos = new Point(0, 530);
-        private Point offScreen = new Point(0, 700);
-        private Point pos0 = new Point(0, 530);
-        private Point pos1 = new Point(0, 610);
+        private Rectangle m_buttonRect;
+        private Rectangle m_cloneRect = new Rectangle(0, 0, 62, 49);
+        private Rectangle m_redraw = new Rectangle(0, 30, 1808, 900);
 
-        private List<Screen> screens = new List<Screen>();
+        private Point m_gridPos = new Point(0, 0);
 
-        private FileManager m_fileManager;
+        private readonly FileManager m_fileManager;
 
-        private System.Windows.Forms.Button[] levelButtons;
-        private System.Windows.Forms.Button[] enemyButtons;
+        private readonly Button[] m_levelButton;
+        private readonly Button[] m_enemyButton;
 
-        private List<Bitmap> m_levelButtons = new List<Bitmap>();
-        private List<Bitmap> m_enemyButtons = new List<Bitmap>();
+        private readonly List<Bitmap> m_levelButtons = new List<Bitmap>();
+        private readonly List<Bitmap> m_enemyButtons = new List<Bitmap>();
+        private readonly List<Screen> m_screens = new List<Screen>();
+        readonly Random random = new Random();
+
 
         public MapMaker()
         {
-            noButtonsX = 19;
-            noButtonsY = 4;
+            //m_numButtonsX = 19;
+            //m_numButtonsY = 4;
 
-            // calculate the width of the remaining bitmap after the intial split 
-            mWidth = m_standardLevelTiles.Width - (mTileWidth * 19);//15
-
-            // split the original bitmap if it's larger than our screen !!
-            if (m_standardLevelTiles.Width > mTileWidth * 19)//15
-            {
-                split1rect = new Rectangle(0, 0, mTileWidth * 19, mTileHeight);
-                split1 = m_standardLevelTiles.Clone(split1rect, m_standardLevelTiles.PixelFormat);
-
-                split2rect = new Rectangle(mTileWidth * 19, 0, mWidth, mTileHeight);
-                split2 = m_standardLevelTiles.Clone(split2rect, m_standardLevelTiles.PixelFormat);
-            }
-
-            DrawGrid();
+            CreateBitmapGrid();
 
             // Calculate the Width & Height of each tile for buttons.
-            screenDisplayX = (m_smallLevelButtonTiles.Width - 20) / noButtonsX;
-            screenDisplayY = m_smallLevelButtonTiles.Height / noButtonsY;// 4;
+            m_screenDisplayX = (m_smallLevelButtonTiles.Width - 20) / m_numButtonsX;
+            m_screenDisplayY = m_smallLevelButtonTiles.Height / m_numButtonsY;
 
-            levelButtons = new Button[4 * 19];
-            enemyButtons = new Button[12];
+            m_levelButton = new Button[m_numberOfLevelButtons];
+            m_enemyButton = new Button[m_numberOfEnemyButtons];
 
             int j = 0;
             int count = 0;
             int buttonYpos = 525;
-            for (int h = 0; h < 4; h++)
+            for (int h = 0; h < m_numButtonsY; h++)
             {
-                for (int i = 0; i < 19; i++)
+                for (int i = 0; i < m_numButtonsX; i++)
                 {
-                    buttonRect = new Rectangle((i * 43), j, screenDisplayX, screenDisplayY);
-                    cloneScreenDisplay = m_smallLevelButtonTiles.Clone(buttonRect, m_smallLevelButtonTiles.PixelFormat);
-                    levelButtons[count] = new System.Windows.Forms.Button();
-                    levelButtons[count].Location = new System.Drawing.Point(i * (screenDisplayX + 8), buttonYpos);
-                    levelButtons[count].Name = "button" + i;
-                    levelButtons[count].Size = new System.Drawing.Size(screenDisplayX + 0, screenDisplayY + 4);
-                    levelButtons[count].UseVisualStyleBackColor = true;
-                    levelButtons[count].BackgroundImage = cloneScreenDisplay;
-                    m_levelButtons.Add(cloneScreenDisplay);
-                    levelButtons[count].Tag = count;
-                    levelButtons[count].Click += new System.EventHandler(ClickHandler);
-                    Controls.Add(levelButtons[count]);
+                    m_buttonRect = new Rectangle((i * 43), j, m_screenDisplayX, m_screenDisplayY);
+                    m_cloneScreenDisplay = m_smallLevelButtonTiles.Clone(m_buttonRect, m_smallLevelButtonTiles.PixelFormat);
+                    m_levelButton[count] = new Button
+                    {
+                        Location = new Point(i * (m_screenDisplayX + 8), buttonYpos),
+                        Name = "button" + i,
+                        Size = new Size(m_screenDisplayX + 0, m_screenDisplayY + 4),
+                        UseVisualStyleBackColor = true,
+                        BackgroundImage = m_cloneScreenDisplay
+                    };
+                    m_levelButtons.Add(m_cloneScreenDisplay);
+                    m_levelButton[count].Tag = count;
+                    m_levelButton[count].Click += new EventHandler(ClickHandler);
+                    Controls.Add(m_levelButton[count]);
                     count++;
                 }
-                j += screenDisplayY;
+                j += m_screenDisplayY;
                 buttonYpos += 40;
             }
 
             j = 0;
             buttonYpos = 0;
             count = 0;
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < m_numberOfEnemyButtons; i++)
             {
-                buttonRect = new Rectangle((i * 43), j, screenDisplayX, screenDisplayY);
-                cloneEnemyDisplay = m_standardEnemyTiles.Clone(buttonRect, m_standardEnemyTiles.PixelFormat);
-                enemyButtons[count] = new System.Windows.Forms.Button();
-                enemyButtons[count].Location = new System.Drawing.Point(i * (screenDisplayX + 8), buttonYpos);
-                enemyButtons[count].Name = "button" + i;
-                enemyButtons[count].Size = new System.Drawing.Size(screenDisplayX + 0, screenDisplayY + 4);
-                enemyButtons[count].UseVisualStyleBackColor = true;
-                enemyButtons[count].BackgroundImage = cloneEnemyDisplay;
-                m_enemyButtons.Add(cloneEnemyDisplay);
-                enemyButtons[count].Tag = count;
-                enemyButtons[count].Click += new System.EventHandler(ClickHandler);
+                m_buttonRect = new Rectangle((i * 43), j, m_screenDisplayX, m_screenDisplayY);
+                m_cloneEnemyDisplay = m_smallEnemyButtonTiles.Clone(m_buttonRect, m_smallEnemyButtonTiles.PixelFormat);
+                m_enemyButton[count] = new Button
+                {
+                    Location = new Point(i * (m_screenDisplayX + 8), buttonYpos),
+                    Name = "button" + i,
+                    Size = new Size(m_screenDisplayX + 0, m_screenDisplayY + 4),
+                    UseVisualStyleBackColor = true,
+                    BackgroundImage = m_cloneEnemyDisplay
+                };
+                m_enemyButtons.Add(m_cloneEnemyDisplay);
+                m_enemyButton[count].Tag = count;
+                m_enemyButton[count].Click += new EventHandler(ClickHandler);
                 count++;
             }
 
             InitializeComponent();
 
-            this.radioButton1.Checked = true;
+            radioButton1.Checked = true;
 
-            for (int i = 0; i < mNoOfScreens; i++)
+            for (int i = 0; i < m_noOfScreens; i++)
             {
-                screens.Add(new Screen(i));
-                this.comboBox1.Items.Add(i);
-                this.comboBox1.Text = "0";
+                m_screens.Add(new Screen());
+                screenNumbers.Items.Add(i);
+                screenNumbers.Text = "0";
             }
-            //this.SaveMenuItem.Enabled = false;
-            m_fileManager = new FileManager(screens, noButtonsX);
+            // SaveMenuItem.Enabled = false;
+            m_fileManager = new FileManager(m_screens, m_numButtonsX, m_standardEnemyTiles, m_standardLevelTiles);
         }
 
         private void MapMaker_MouseMove(object sender, MouseEventArgs e)
         {
-            this.label3.Text = e.X.ToString();
-            this.label4.Text = e.Y.ToString();
+            label3.Text = e.X.ToString();
+            label4.Text = e.Y.ToString();
             m_screenshotStartX = e.X;
             m_screenshotStartY = e.Y;
-            Invalidate(redraw);
+            Invalidate(m_redraw);
         }
 
         private void MapMaker_Paint(object sender, PaintEventArgs e)
         {
-            e.Graphics.DrawImage(grid, gridPos);
+            int tileCount = 0;
+            e.Graphics.DrawImage(m_grid, m_gridPos);
 
-            foreach (Row r in screens[mLevel].Rows)
+            foreach (Tile t in m_screens[m_level].Tiles)
             {
-                foreach (Tile t in r.Tiles)
+                if (m_screens[m_level].Tiles[tileCount].BitmapTile != null)
                 {
-                    if (t.BitmapTile != null)
-                    {
-                        e.Graphics.DrawImage(t.BitmapTile, t.XStart, t.YStart);
-                    }
+                    e.Graphics.DrawImage(t.BitmapTile, t.XStart, t.YStart);
                 }
+                if (tileCount == m_screens[m_level].Tiles.Count)
+                {
+                    tileCount = 0;
+                }
+                tileCount += 1;
             }
 
-            if (areMoving)
+            if (m_areMoving)
             {
-                e.Graphics.DrawImage(cloneBitmap, m_screenshotStartX, m_screenshotStartY);
+                e.Graphics.DrawImage(m_cloneBitmap, m_screenshotStartX, m_screenshotStartY);
             }
 
-            this.label8.Text = mLevel.ToString();
-            this.label5.Text = mGridSquareNmber.ToString();
+            label8.Text = m_level.ToString();
+            label5.Text = m_gridSquareNmber.ToString();
         }
 
         // Get our mouse x & y co-ord's if no tile is selected to be placed on the grid i.e. it's null
-        //remove it from our list & from the screen.
+        // remove it from our list & from the screen.
         private void MapMaker_Down(object sender, MouseEventArgs e)
         {
             m_screenshotStartX = e.X;
             m_screenshotStartY = e.Y;
-            if (cloneBitmap == null)
+            if (m_cloneBitmap == null)
             {
-                snapToGrid(e);
-                screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].BitmapTile = null;
-                screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].AsciiCode = "4"; // ".";
+                SnapToGrid(e);
+                m_screens[m_level].Tiles[m_gridSquareNmber].BitmapTile = null;
+                m_screens[m_level].Tiles[m_gridSquareNmber].TileNumber = 4;
             }
         }
 
         private void MapMaker_MouseUp(object sender, MouseEventArgs e)
         {
             // check mouse x & y co-ords
-            if (e.X < 62 || e.X > 804 ||
-                e.Y < 30 || e.Y > 521)
+            if (e.X < 0 || e.X > 804 || e.Y < 30 || e.Y > 521)
             {
-                cloneBitmap = null;
-                areMoving = false;
+                m_cloneBitmap = null;
+                m_areMoving = false;
             }
 
-            if (e.Button == MouseButtons.Left && cloneBitmap != null)
+            if (e.Button == MouseButtons.Left && m_cloneBitmap != null)
             {
-                snapToGrid(e);
-                screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].BitmapTile = cloneBitmap;
-                screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].XStart = m_screenshotStartX;
-                screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].YStart = m_screenshotStartY;
-                screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].AsciiCode = asciiCode;
-
-                if(radioButton1.Checked)
-                {
-                    screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].Type = "platform";
-                }
-                else
-                {
-                    screens[mLevel].Rows[mRowNumber].Tiles[mGridSquareNmber].Type = "enemy";
-                }
+                SnapToGrid(e);
+                m_screens[m_level].Tiles[m_gridSquareNmber].BitmapTile = m_cloneBitmap;
+                m_screens[m_level].Tiles[m_gridSquareNmber].XStart = m_screenshotStartX;
+                m_screens[m_level].Tiles[m_gridSquareNmber].YStart = m_screenshotStartY;
+                m_screens[m_level].Tiles[m_gridSquareNmber].TileNumber = m_asciiCode;
             }
 
             if (e.Button == MouseButtons.Right)
             {
-                cloneBitmap = null;
-                areMoving = false;
+                m_cloneBitmap = null;
+                m_areMoving = false;
             }
         }
 
-        private void startMoving()
+        private void StartMoving()
         {
-            if (platforms)
+            if (m_platforms)
             {
-                cloneBitmap = m_standardLevelTiles.Clone(cloneRect, m_standardLevelTiles.PixelFormat);
+                m_cloneBitmap = m_standardLevelTiles.Clone(m_cloneRect, m_standardLevelTiles.PixelFormat);
             }
             else
             {
-                cloneBitmap = m_standardEnemyTiles.Clone(cloneRect, m_standardLevelTiles.PixelFormat);
+                m_cloneBitmap = m_standardEnemyTiles.Clone(m_cloneRect, m_standardEnemyTiles.PixelFormat);
             }
-            areMoving = true;
+            m_areMoving = true;
         }
 
-        private int[] snapToGrid(MouseEventArgs e)
+        private void SnapToGrid(MouseEventArgs e)
         {
-            int counterX = 1;
-            int counterY = 0;
-            int[] position = new int[2];
-            for (int i = mTileWidth; i < 13 * mTileWidth; i += mTileWidth)//12
+            // The menu bar pinches 30 pixels from the top of the screen !!
+            int m_menuBarFudgeFactor = 30;
+            for (int i = 0; i < 13 * m_tileWidth; i += m_tileWidth)
             {
-                for (int j = 0 + mMenuBarFudgeFactor; j < 10 * mTileHeight; j += mTileHeight)
+                for (int j = 0 + m_menuBarFudgeFactor; j < 10 * m_tileHeight; j += m_tileHeight)
                 {
-                    if ((e.X >= i && e.X < i + mTileWidth) && (e.Y >= j && e.Y < j + mTileHeight))
+                    if ((e.X >= i && e.X < i + m_tileWidth) && (e.Y >= j && e.Y < j + m_tileHeight))
                     {
                         m_screenshotStartX = i;
                         m_screenshotStartY = j;
-                        counterX = i / mTileWidth;
-                        counterY = j / mTileHeight;
-
-                        mRowNumber = counterY;
-                        mGridSquareNmber = counterX;
-                        position[0] = mRowNumber;
-                        position[1] = mGridSquareNmber;
-
-                        return position;
+                        m_gridSquareNmber = (i / m_tileWidth) + ((j / m_tileHeight) * 14);
                     }
                 }
             }
-            return position;
         }
 
-        // Draw the grid 13 squares wide x 10 squares high and convert it to a Bitmap
-        private void DrawGrid()
+        // Create a bitmap grid
+        private void CreateBitmapGrid()
         {
             // Horizontal Lines
-            for (int X = mTileWidth; X < (13 * mTileWidth); X++)//12
+            for (int X = 0; X < (13 * m_tileWidth); X++)
             {
-                for (int Y = 30; Y < (11 * mTileHeight); Y += mTileHeight)
+                for (int Y = 30; Y < (11 * m_tileHeight); Y += m_tileHeight)
                 {
-                    grid.SetPixel(X, Y, Color.White);
+                    m_grid.SetPixel(X, Y, Color.White);
                 }
             }
             // Vertical Lines
-            for (int X = mTileWidth; X < (14 * mTileWidth); X += mTileWidth)
+            for (int X = 0; X < (14 * m_tileWidth); X += m_tileWidth)
             {
-                for (int Y = 30; Y < (10 * mTileHeight) + 30; Y++)
+                for (int Y = 30; Y < (10 * m_tileHeight) + 30; Y++)
                 {
-                    grid.SetPixel(X, Y, Color.White);
+                    m_grid.SetPixel(X, Y, Color.White);
                 }
             }
         }
@@ -310,163 +278,135 @@ namespace mapmaker
         private void ClickHandler(object sender, EventArgs e)
         {
             // Get the TAG number of the button pressed
-            string tagger = ((System.Windows.Forms.Button)sender).Tag.ToString();
+            string tagger = ((Button)sender).Tag.ToString();
 
             int tagNumber;
             int nextLine = 0;
             tagNumber = int.Parse(tagger);
 
-            if (platforms)
+            if (m_platforms)
             {
-                if (tagNumber < noButtonsX)
+                if (tagNumber < m_numButtonsX)
                 {
                     nextLine = 0;
                 }
-                else if (tagNumber >= noButtonsX && tagNumber < (noButtonsX * 2))
+                else if (tagNumber >= m_numButtonsX && tagNumber < (m_numButtonsX * 2))
                 {
                     tagNumber -= (19 * 1);
-                    nextLine += (mTileHeight * 1);
+                    nextLine += (m_tileHeight * 1);
                 }
-                else if (tagNumber >= (noButtonsX * 2) && tagNumber < (noButtonsX * 3))
+                else if (tagNumber >= (m_numButtonsX * 2) && tagNumber < (m_numButtonsX * 3))
                 {
                     tagNumber -= (19 * 2);
-                    nextLine += (mTileHeight * 2);
+                    nextLine += (m_tileHeight * 2);
                 }
-                else if (tagNumber >= (noButtonsX * 3) && tagNumber < (noButtonsX * 4))
+                else if (tagNumber >= (m_numButtonsX * 3) && tagNumber < (m_numButtonsX * 4))
                 {
                     tagNumber -= (19 * 3);
-                    nextLine += (mTileHeight * 3);
+                    nextLine += (m_tileHeight * 3);
                 }
-                asciiCode = tagger;
-                cloneRect = new Rectangle(mTileWidth * tagNumber, nextLine, mTileWidth, mTileHeight);
-                startMoving();
+                m_asciiCode = int.Parse(tagger);
+                m_cloneRect = new Rectangle(m_tileWidth * tagNumber, nextLine, m_tileWidth, m_tileHeight);
+                StartMoving();
             }
             else
             {
+                // TODO check the below
+
                 // If the button pressed is less than the number of enemies then make
                 // it addable to the map.
-                if (tagNumber < 13)
+                if (tagNumber < 9)
                 {
                     nextLine = 0;
-                    asciiCode = 8 + tagger;
-                    cloneRect = new Rectangle(mTileWidth * tagNumber, nextLine, mTileWidth, mTileHeight);
-                    startMoving();
+                    m_asciiCode = int.Parse(8 + tagger);
+                    m_cloneRect = new Rectangle(m_tileWidth * tagNumber, nextLine, m_tileWidth, m_tileHeight);
+                    StartMoving();
                 }
             }
         }
 
         private void NewMenuItem_Click(object sender, EventArgs e)
         {
+            // Not currently implemented
         }
 
-        // open json file
         private void OpenMenuItem_Click(object sender, EventArgs e)
         {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Title = "Map Maker";
-            openFileDialog.InitialDirectory = @"*.*";
-            openFileDialog.Filter = "All files (*.json)|*.json|All files (*.txt)|*.txt";
-            openFileDialog.FilterIndex = 2;
-            openFileDialog.RestoreDirectory = true;
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                Title = "Map Maker",
+                InitialDirectory = @"*.*",
+                Filter = "All files (*.json)|*.json|All files (*.txt)|*.txt",
+                FilterIndex = 2,
+                RestoreDirectory = true
+            };
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 if (openFileDialog.FileName.ToLower().Contains("txt"))
                 {
-                    screens = m_fileManager.ImportTextFile(openFileDialog.FileName);
+                    m_fileManager.ImportTextFile(openFileDialog.FileName);
                 }
                 if (openFileDialog.FileName.ToLower().Contains("json"))
                 {
-                    screens = m_fileManager.ImportJSONFile(openFileDialog.FileName);
+                    m_fileManager.ImportJSONFile(openFileDialog.FileName);
                 }
             }
         }
 
         private void SaveMenuItem_Click(object sender, EventArgs e)
         {
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Title = "Map Maker";
-            saveFileDialog.InitialDirectory = @"*.*";
-            saveFileDialog.Filter = "All files (*.json)|*.json|All files (*.txt)|*.txt";
-            saveFileDialog.FilterIndex = 2;
-            saveFileDialog.RestoreDirectory = true;
+            SaveFileDialog saveFileDialog = new SaveFileDialog
+            {
+                Title = "Map Maker",
+                InitialDirectory = @"*.*",
+                Filter = "All files (*.*)|*.*|Text (*.txt)|*.txt|Json (*.json)|*.json",
+                FilterIndex = 2,
+                RestoreDirectory = true
+            };
 
             if (saveFileDialog.ShowDialog() == DialogResult.OK)
             {
-                m_fileManager.ExportTextFile(saveFileDialog.FileName);
-            }
-        }
-
-        private void button16_Click(object sender, EventArgs e)
-        {
-            if (mLevel > 0)
-            {
-                mLevel--;
-                this.label8.Text = mLevel.ToString();
-                Invalidate();
-            }
-            if (mLevel == 0)
-            {
-                mLevel = mNoOfScreens - 1;
-                this.label8.Text = mLevel.ToString();
-                Invalidate();
-            }
-        }
-        // Screens up
-        private void button17_Click(object sender, EventArgs e)
-        {
-            if (mLevel < mNoOfScreens)
-            {
-                mLevel++;
-                this.label8.Text = mLevel.ToString();
-                Invalidate();
-            }
-            if (mLevel == mNoOfScreens)
-            {
-                mLevel = 0;
-                this.label8.Text = mLevel.ToString();
-                Invalidate();
+                if (saveFileDialog.FileName.ToLower().Contains(".txt"))
+                {
+                    m_fileManager.ExportTextFile(saveFileDialog.FileName);
+                }
+                else if (saveFileDialog.FileName.ToLower().Contains(".json"))
+                {
+                    m_fileManager.ExportJsonFile(saveFileDialog.FileName);
+                }
             }
         }
 
         private void LevelButton_Click(object sender, EventArgs e)
         {
-            bool castedLevel = int.TryParse(comboBox1.Text, out mLevel);
-            this.label8.Text = mLevel.ToString();
+            m_level = int.Parse(screenNumbers.SelectedItem.ToString());
+            label8.Text = m_level.ToString();
             Invalidate();
         }
 
         private void ClearMenuItem_Click(object sender, EventArgs e)
         {
-            string message = "Do you want to close without saving ?";
-            DialogResult result;
-            result = MessageBox.Show(this, message, "Close", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
-
+            DialogResult result = MessageBox.Show(this, "Do you want to close without saving ?", "Close", MessageBoxButtons.OKCancel, MessageBoxIcon.Question);
             if (result == DialogResult.OK)
             {
-                foreach (Screen scrn in screens)
+                foreach (Screen scrn in m_screens)
                 {
-                    scrn.Rows.Clear();
-                    scrn.InitialiseRows();
+                    scrn.Tiles.Clear();
+                    scrn.InitaliseTiles();
                 }
                 Invalidate();
-                this.SaveMenuItem.Enabled = false;
+                SaveMenuItem.Enabled = false;
             }
         }
 
-        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            About about = new About();
-            about.ShowDialog();
-
-        }
         private void radioButton1_CheckedChanged(object sender, EventArgs e)
         {
-            platforms = true;
+            m_platforms = true;
 
-            for (int i = 0; i < levelButtons.Length; i++)
+            for (int i = 0; i < m_levelButton.Length; i++)
             {
-                levelButtons[i].Visible = true;
+                m_levelButton[i].Visible = true;
             }
 
             Invalidate();
@@ -474,24 +414,53 @@ namespace mapmaker
 
         private void radioButton2_CheckedChanged(object sender, EventArgs e)
         {
-            platforms = false;
+            m_platforms = false;
 
-            for (int i = 0; i < levelButtons.Length; i++)
+            for (int i = 0; i < m_levelButton.Length; i++)
             {
-                levelButtons[i].Visible = false;
+                m_levelButton[i].Visible = false;
             }
 
-            for (int i = 0; i < enemyButtons.Length; i++)
+            for (int i = 0; i < m_enemyButton.Length; i++)
             {
-                enemyButtons[i].Location = new System.Drawing.Point(i * (screenDisplayX + 8), 525);
-                Controls.Add(enemyButtons[i]);
+                m_enemyButton[i].Location = new Point(i * (m_screenDisplayX + 8), 525);
+                Controls.Add(m_enemyButton[i]);
             }
+
             Invalidate();
         }
 
         private void exitToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
             Application.Exit();
+        }
+
+        private void LevelDown(object sender, EventArgs e)
+        {
+            //mLevel = (mLevel - 1) % 255;
+            //label8.Text = mLevel.ToString();
+            //Invalidate();
+
+            if (m_level > 0)
+            {
+                m_level--;
+                label8.Text = m_level.ToString();
+                Invalidate();
+                return;
+            }
+            if (m_level == 0)
+            {
+                m_level = m_noOfScreens - 1;
+                label8.Text = m_level.ToString();
+                Invalidate();
+            }
+        }
+
+        private void LevelUp(object sender, EventArgs e)
+        {
+            m_level = (m_level + 1) % 255;
+            label8.Text = m_level.ToString();
+            Invalidate();
         }
     }
 }

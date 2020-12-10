@@ -5,58 +5,29 @@ using System.Drawing;
 namespace mapmaker
 {
     [Serializable]
-    class Tile
+    public class Tile
     {
-        private Bitmap mBit;
-        private int mX;
-        private int mY;
-        private string mAsciiCode;
-        private string mType;
-
-        public Tile(string asc)
+        public Tile(int tileNumber)
         {
-            mAsciiCode = asc;
+            TileNumber = tileNumber;
         }
 
-        [JsonConstructor]
-        public Tile(int X, int Y, string asc, string type)
-        {
-            mX = X;
-            mY = Y;
-            mAsciiCode = asc;
-            mType = type;
-        }
+        //[JsonConstructor]
+        //public Tile(Bitmap bitmap, int X, int Y, int tileNumber)
+        //{
+        //    BitmapTile = bitmap;
+        //    XStart = X;
+        //    YStart = Y;
+        //    TileNumber = tileNumber;
+        //}
 
-        [JsonIgnoreAttribute]
-        public Bitmap BitmapTile
-        {
-            get { return mBit; }
-            set { mBit = value; }
-        }
+        [JsonIgnore]
+        public Bitmap BitmapTile { get; set; }
 
-        public int XStart
-        {
-            get { return mX; }
-            set { mX = value; }
-        }
+        public int XStart { get; set; }
 
-        public int YStart
-        {
-            get { return mY; }
-            set { mY = value; }
-        }
+        public int YStart { get; set; }
 
-        public string AsciiCode
-        {
-            get { return mAsciiCode; }
-            set { mAsciiCode = value; }
-        }
-
-        public string Type
-        {
-            get { return mType; }
-            set { mType = value; }
-        }
-
+        public int TileNumber { get; set; }
     }
 }

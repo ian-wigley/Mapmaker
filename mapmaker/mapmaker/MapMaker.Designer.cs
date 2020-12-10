@@ -44,7 +44,7 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.LevelButton = new System.Windows.Forms.Button();
-            this.comboBox1 = new System.Windows.Forms.ComboBox();
+            this.screenNumbers = new System.Windows.Forms.ComboBox();
             this.ScreensUp = new System.Windows.Forms.Button();
             this.ScreensDown = new System.Windows.Forms.Button();
             this.label5 = new System.Windows.Forms.Label();
@@ -129,44 +129,42 @@
             // NewMenuItem
             // 
             this.NewMenuItem.Name = "NewMenuItem";
-            this.NewMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.NewMenuItem.Size = new System.Drawing.Size(103, 22);
             this.NewMenuItem.Text = "New";
             this.NewMenuItem.Click += new System.EventHandler(this.NewMenuItem_Click);
             // 
             // ClearMenuItem
             // 
             this.ClearMenuItem.Name = "ClearMenuItem";
-            this.ClearMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.ClearMenuItem.Size = new System.Drawing.Size(103, 22);
             this.ClearMenuItem.Text = "Close";
             this.ClearMenuItem.Click += new System.EventHandler(this.ClearMenuItem_Click);
             // 
             // OpenMenuItem
             // 
             this.OpenMenuItem.Name = "OpenMenuItem";
-            this.OpenMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.OpenMenuItem.Size = new System.Drawing.Size(103, 22);
             this.OpenMenuItem.Text = "Open";
             this.OpenMenuItem.Click += new System.EventHandler(this.OpenMenuItem_Click);
             // 
             // SaveMenuItem
             // 
             this.SaveMenuItem.Name = "SaveMenuItem";
-            this.SaveMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.SaveMenuItem.Size = new System.Drawing.Size(103, 22);
             this.SaveMenuItem.Text = "Save";
             this.SaveMenuItem.Click += new System.EventHandler(this.SaveMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click_1);
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
-            this.aboutToolStripMenuItem.Text = "About";
-            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(12, 20);
             // 
             // groupBox1
             // 
@@ -185,7 +183,7 @@
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.LevelButton);
-            this.groupBox2.Controls.Add(this.comboBox1);
+            this.groupBox2.Controls.Add(this.screenNumbers);
             this.groupBox2.Controls.Add(this.ScreensUp);
             this.groupBox2.Controls.Add(this.ScreensDown);
             this.groupBox2.Controls.Add(this.label5);
@@ -212,13 +210,13 @@
             this.LevelButton.UseVisualStyleBackColor = false;
             this.LevelButton.Click += new System.EventHandler(this.LevelButton_Click);
             // 
-            // comboBox1
+            // screenNumbers
             // 
-            this.comboBox1.FormattingEnabled = true;
-            this.comboBox1.Location = new System.Drawing.Point(29, 52);
-            this.comboBox1.Name = "comboBox1";
-            this.comboBox1.Size = new System.Drawing.Size(42, 21);
-            this.comboBox1.TabIndex = 8;
+            this.screenNumbers.FormattingEnabled = true;
+            this.screenNumbers.Location = new System.Drawing.Point(29, 52);
+            this.screenNumbers.Name = "screenNumbers";
+            this.screenNumbers.Size = new System.Drawing.Size(42, 21);
+            this.screenNumbers.TabIndex = 8;
             // 
             // ScreensUp
             // 
@@ -232,7 +230,7 @@
             this.ScreensUp.Size = new System.Drawing.Size(34, 33);
             this.ScreensUp.TabIndex = 7;
             this.ScreensUp.UseVisualStyleBackColor = true;
-            this.ScreensUp.Click += new System.EventHandler(this.button17_Click);
+            this.ScreensUp.Click += new System.EventHandler(this.LevelUp);
             // 
             // ScreensDown
             // 
@@ -247,7 +245,7 @@
             this.ScreensDown.Size = new System.Drawing.Size(34, 33);
             this.ScreensDown.TabIndex = 6;
             this.ScreensDown.UseVisualStyleBackColor = true;
-            this.ScreensDown.Click += new System.EventHandler(this.button16_Click);
+            this.ScreensDown.Click += new System.EventHandler(this.LevelDown);
             // 
             // label5
             // 
@@ -390,7 +388,7 @@
         private System.Windows.Forms.Button ScreensUp;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.Button LevelButton;
-        private System.Windows.Forms.ComboBox comboBox1;
+        private System.Windows.Forms.ComboBox screenNumbers;
         private System.Windows.Forms.ToolStripMenuItem ClearMenuItem;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.RadioButton radioButton2;
