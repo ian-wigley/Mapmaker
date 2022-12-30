@@ -185,8 +185,8 @@ namespace mapmaker
                 cloneBitmap = m_enemyBitmap.Clone(cloneRect, m_enemyBitmap.PixelFormat);
             }
             screens[level].Tiles[count].BitmapTile = cloneBitmap;
-            screens[level].Tiles[count].XStart = x;
-            screens[level].Tiles[count].YStart = y;
+            screens[level].Tiles[count].DX = x;
+            screens[level].Tiles[count].DY = y;
             screens[level].Tiles[count].TileNumber = tileNumber;
         }
 
@@ -214,33 +214,54 @@ namespace mapmaker
             }
         }
 
-        public void ExportJsonFile(string fileName)
+
+  //  [ {
+  //      "rectangleList": [],
+		//"enemies": [],
+  //      "name": "AboveMoonScreen0",
+  //      "comment": "sx, sy.. start x, y : dx, dy.. => destination x, y ..",
+  //      "tiles": [
+  //          {
+  //              "_comment": "Upper Rocks",
+  //              "sx": 0,
+  //              "sy": 0,
+  //              "sw": 100,
+  //              "sh": 117,
+  //              "dx": 0,
+  //              "dy": 170,
+  //              "dw": 100,
+  //              "dh": 117
+  //          }
+  //        ]
+  //      }
+  //    ]
+
+    public void ExportJsonFile(string fileName)
         {
-            int count = 0;
+            //int count = 0;
             StreamWriter outputFile = null;
             JsonSerializer jsonSerializer = new JsonSerializer();
-            //string[] lineToOutput = new string[1];
-            List<string> newTest = new List<string>();
-
+            List<string> tempTileData = new List<string>();
             try
             {
                 outputFile = new StreamWriter(fileName, false);
                 if (outputFile != null)
                 {
-                    foreach (Screen screen in screens)
-                    {
-                        int temp = screen.Tiles.Count;
-                        for (int i = 0; i < temp; i += 14)
-                        {
-                            //lineToOutput[0] = screen.GetDataAsString(i) + "//" + count.ToString();
-                            //outputFile.WriteLine(lineToOutput[0]);
-                            //newTest.Add(lineToOutput[0]);
-                            newTest.Add(screen.GetDataAsString(i) + "//" + count.ToString());
-                        }
-                        count++;
-                    }
-                    string outputTest = JsonConvert.SerializeObject(newTest);
-                    outputFile.Write(outputTest);
+
+                    tempTileData.Add(screens[0].GetDataAsJsonString());
+
+                    //foreach (Screen screen in screens)
+                    //{
+                    //    tempTileData.Add(screen.GetDataAsJsonString());
+                    //    //for (int i = 0; i < screen.Tiles.Count; i += 14)
+                    //    //{
+                    //    //    tempTileData.Add(screen.GetDataAsJsonString(i)); // + "//" + count.ToString());
+                    //    //}
+                    //    //count++;
+                    //}
+                    ////tempTileData.Add("}");
+                    string jsonData = JsonConvert.SerializeObject(tempTileData);
+                    outputFile.Write(jsonData);
                     outputFile.Close();
                 }
             }
