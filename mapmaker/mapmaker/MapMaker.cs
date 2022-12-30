@@ -160,7 +160,7 @@ namespace mapmaker
             {
                 if (m_screens[m_level].Tiles[tileCount].BitmapTile != null)
                 {
-                    e.Graphics.DrawImage(t.BitmapTile, t.XStart, t.YStart);
+                    e.Graphics.DrawImage(t.BitmapTile, t.DX, t.DY);
                 }
                 if (tileCount == m_screens[m_level].Tiles.Count)
                 {
@@ -205,8 +205,8 @@ namespace mapmaker
             {
                 SnapToGrid(e);
                 m_screens[m_level].Tiles[m_gridSquareNmber].BitmapTile = m_cloneBitmap;
-                m_screens[m_level].Tiles[m_gridSquareNmber].XStart = m_screenshotStartX;
-                m_screens[m_level].Tiles[m_gridSquareNmber].YStart = m_screenshotStartY;
+                m_screens[m_level].Tiles[m_gridSquareNmber].DX = m_screenshotStartX;
+                m_screens[m_level].Tiles[m_gridSquareNmber].DY = m_screenshotStartY;
                 m_screens[m_level].Tiles[m_gridSquareNmber].TileNumber = m_asciiCode;
             }
 
