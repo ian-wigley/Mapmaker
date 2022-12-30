@@ -24,9 +24,9 @@ namespace mapmaker
         [JsonIgnore]
         public Bitmap BitmapTile { get; set; }
 
-        public int XStart { get; set; }
+        public int DX { get; set; }
 
-        public int YStart { get; set; }
+        public int DY { get; set; }
 
         public int TileNumber { get; set; }
     }
